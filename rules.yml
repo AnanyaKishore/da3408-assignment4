@@ -1,0 +1,144 @@
+groups:
+  # Host (node_exporter) recording rules
+  - name: node-recording-rules
+    rules:
+      # Overall CPU utilisation in % across all cores from node_exporter's node_cpu_seconds_total, over 1 minute
+      - record: node:cpu_utilisation:percent
+        expr: 100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])))
+
+      # CPU utilisation % split by mode (user, system, iowait, etc.) averaged over all cores, excluding idle
+      - record: node:cpu_utilisation_by_mode:percent
+        expr: 100 * avg by (mode) (rate(node_cpu_seconds_total{mode!="idle"}[1m]))
+
+      # Number of CPU cores reported by node_exporter
+      - record: node:cpu_cores:count
+        expr: count(node_cpu_seconds_total{mode="idle"})
+
+      # RAM utilisation % using MemAvailable
+      - record: node:memory_utilisation:percent
+        expr: 100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
+
+      - record: node:memory_used:bytes
+        expr: node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes
+
+      # For swap usage %; return 0 when there is no swap
+      - record: node:swap_utilisation:percent
+        # max() strips labels so 'or vector(0)' (which has no labels) matches correctly
+        expr: max(100 * (1 - node_memory_SwapFree_bytes / (node_memory_SwapTotal_bytes > 0))) or vector(0)
+
+      # For % of the root filesystem (/) that is used, ignoring the 'rootfs' duplicate entry
+      - record: node:filesystem_root_used:percent
+        expr: 100 * (1 - node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"})
+
+      # Regex to exclude loop and ram block devices; sum disk read/write bytes per second across real disks
+      # Regex: device!~"loop.*|ram.*"  -> drops snap loop devices and ramdisks
+      - record: node:disk_read:bytes_per_second
+        expr: sum(rate(node_disk_read_bytes_total{device!~"loop.*|ram.*"}[1m]))
+      - record: node:disk_written:bytes_per_second
+        expr: sum(rate(node_disk_written_bytes_total{device!~"loop.*|ram.*"}[1m]))
+
+      # For disk busy % (time spent doing IO) of the busiest real disk, excluding loop/ram devices."
+      - record: node:disk_io_busy_max:percent
+        expr: 100 * max(rate(node_disk_io_time_seconds_total{device!~"loop.*|ram.*"}[1m]))
+
+      # For network receive/transmit bytes per second summed over network interfaces, excluding loopback and docker/veth virtual interfaces
+      # Regex: device!~"lo|docker.*|veth.*|br-.*"
+      - record: node:network_receive:bytes_per_second
+        expr: sum(rate(node_network_receive_bytes_total{device!~"lo|docker.*|veth.*|br-.*"}[1m]))
+      - record: node:network_transmit:bytes_per_second
+        expr: sum(rate(node_network_transmit_bytes_total{device!~"lo|docker.*|veth.*|br-.*"}[1m]))
+
+  # Application recording rules
+  - name: app-recording-rules
+    rules:
+      # For images captioned successfully per second, by mode
+      - record: caption:images_success:rate1m
+        expr: sum by (mode) (rate(caption_images_processed_total{status="success"}[1m]))
+
+      - record: caption:images_success_all:rate1m
+        expr: sum(rate(caption_images_processed_total{status="success"}[1m]))
+
+      # For the 50th/95th/99th percentile of inference latency from the histogram caption_inference_duration_seconds, by mode
+      # Logic: per-bucket rate over 1m -> sum keeping le and mode -> interpolate quantile
+      - record: caption:inference_seconds:p50
+        expr: histogram_quantile(0.50, sum by (le, mode) (rate(caption_inference_duration_seconds_bucket[1m])))
+      - record: caption:inference_seconds:p95
+        expr: histogram_quantile(0.95, sum by (le, mode) (rate(caption_inference_duration_seconds_bucket[1m])))
+      - record: caption:inference_seconds:p99
+        expr: histogram_quantile(0.99, sum by (le, mode) (rate(caption_inference_duration_seconds_bucket[1m])))
+
+      # For average request duration from a Summary metric (rate of _sum divided by rate of _count), by mode
+      - record: caption:request_seconds:avg1m
+        expr: sum by (mode) (rate(caption_request_duration_seconds_sum[1m])) / sum by (mode) (rate(caption_request_duration_seconds_count[1m]))
+
+      # Average preprocessing time (histogram _sum/_count) and average model-lock wait (summary)
+      - record: caption:preprocess_seconds:avg1m
+        expr: sum by (mode) (rate(caption_preprocess_duration_seconds_sum[1m])) / sum by (mode) (rate(caption_preprocess_duration_seconds_count[1m]))
+      - record: caption:lock_wait_seconds:avg1m
+        expr: sum by (mode) (rate(caption_model_lock_wait_seconds_sum[1m])) / sum by (mode) (rate(caption_model_lock_wait_seconds_count[1m]))
+
+      # For % of failed images out of all images in the last 5 minutes; returns 0 instead of NaN when there is no traffic
+      # Logic: failed/total ; '> 0' drops the series when total is 0 ; 'or vector(0)' fills 0
+      - record: caption:error_ratio:percent
+        expr: (100 * sum(rate(caption_images_processed_total{status="failed"}[5m])) / (sum(rate(caption_images_processed_total[5m])) > 0)) or vector(0)
+
+      # Converts the app's process CPU percent (100 = one core) into a percentage of the whole machine, so it is comparable to host CPU %
+      # Logic: process% / number_of_cores
+      - record: caption:process_cpu:percent_of_host
+        expr: caption_process_cpu_percent / scalar(count(node_cpu_seconds_total{mode="idle"}))
+
+      # App process memory as a percent of total host RAM
+      - record: caption:process_memory:percent_of_host
+        expr: 100 * caption_process_memory_rss_bytes / scalar(node_memory_MemTotal_bytes)
+
+  # Alerts (localhost:9093)
+  - name: caption-alerts
+    rules:
+      - alert: CaptionAppDown
+        expr: up{job="caption_app"} == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Captioning app metrics endpoint is down"
+          description: "Prometheus could not scrape {{ $labels.instance }} for 15s."
+
+      - alert: NodeExporterDown
+        expr: up{job="node"} == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "node_exporter is down"
+
+      - alert: HostHighCPU
+        expr: node:cpu_utilisation:percent > 90
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host CPU above 90% for 1 minute ({{ $value | printf \"%.0f\" }}%)"
+
+      - alert: HostHighMemory
+        expr: node:memory_utilisation:percent > 90
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host RAM above 90% for 1 minute ({{ $value | printf \"%.0f\" }}%)"
+
+      - alert: SlowInference
+        expr: caption:inference_seconds:p95 > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 inference latency above 5 seconds ({{ $labels.mode }} mode)"
+
+      - alert: CaptionErrorsHigh
+        expr: caption:error_ratio:percent > 10
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 10% of images failed in the last 5 minutes"

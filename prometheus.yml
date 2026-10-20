@@ -1,0 +1,30 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["localhost:9093"]
+
+rule_files:
+  - "rules.yml"
+
+scrape_configs:
+  - job_name: "caption_app" # streamlit app
+    static_configs:
+      - targets: ["localhost:18000"]
+        labels:
+          app: "image-captioning"
+          tier: "application"
+
+  - job_name: "node" # node exporter
+    static_configs:
+      - targets: ["localhost:9100"]
+        labels:
+          app: "image-captioning"
+          tier: "infrastructure"
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

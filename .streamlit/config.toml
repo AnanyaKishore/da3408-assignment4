@@ -1,0 +1,8 @@
+[server]
+# Max upload size in MB (applies to ZIPs)
+maxUploadSize = 200
+# Streamlit's file watcher crawls torch/transformers and spams errors; not needed here
+fileWatcherType = "none"
+
+[browser]
+gatherUsageStats = false
