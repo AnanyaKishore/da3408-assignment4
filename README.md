@@ -3,8 +3,6 @@
 ## Structure
 ```text
 da3408-assignment4/
-├── .streamlit/
-│   └── config.toml
 ├── grafana/
 │   └── dashboard.json
 ├── .gitignore
@@ -63,7 +61,6 @@ alertmanager-0.34.1.linux-amd64/
 | `rules.yml` | Recording rules (pre-computed PromQL used by the dashboard: CPU %, RAM %, disk, network, latency percentiles, error ratio) and alert rules (app down, node_exporter down, high CPU, high RAM, slow inference, high error rate). Explanations are commented above each PromQL. |
 | `alertmanager.yml` | Routes firing alerts to a webhook (replace the URL with your own from https://webhook.site). |
 | `grafana/dashboard.json` | Grafana dashboard export, ordered from high-level health to low-level resources: service health, throughput, latency, app/host correlation, system resources, workload. |
-| `.streamlit/config.toml` | Raises the upload limit to 200 MB and turns off Streamlit's file watcher. |
 
 ---
 
