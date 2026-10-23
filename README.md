@@ -21,9 +21,9 @@ The Streamlit app was tested with the following inputs:
 
 ```text
 sample_images/
-├── bulk_job_1.zip
-├── bulk_job_2.zip # also contains .txt files, to check that non-images are skipped
-├── bulk_job_3.zip # contains corrupted images
+├── bulk_job_1.zip # 5 images
+├── bulk_job_2.zip # 5 images, also contains 5 .txt files, to check that non-images are skipped
+├── bulk_job_3.zip # 11 normal images, also contains 2 corrupted images
 ├── images.zip # contains 27 images
 ├── single_1.jpg
 ├── single_2.jpg

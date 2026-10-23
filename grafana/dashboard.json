@@ -13,7 +13,7 @@
   "graphTooltip": 1,
   "refresh": "5s",
   "schemaVersion": 39,
-  "version": 5,
+  "version": 6,
   "time": {
     "from": "now-15m",
     "to": "now"
@@ -60,7 +60,7 @@
     },
     {
       "type": "stat",
-      "title": "App status",
+      "title": "App status: /metrics endpoint",
       "id": 3,
       "datasource": {
         "type": "prometheus",
@@ -140,11 +140,12 @@
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false
-      }
+      },
+      "description": "UP means Prometheus can scrape the app. DOWN means it crashed or was never opened."
     },
     {
       "type": "stat",
-      "title": "node_exporter status",
+      "title": "node_exporter status: host metrics",
       "id": 4,
       "datasource": {
         "type": "prometheus",
@@ -224,11 +225,12 @@
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false
-      }
+      },
+      "description": "UP means host CPU, RAM and disk metrics are being collected."
     },
     {
       "type": "stat",
-      "title": "Model loaded",
+      "title": "Model loaded: BLIP in RAM",
       "id": 5,
       "datasource": {
         "type": "prometheus",
@@ -308,11 +310,12 @@
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false
-      }
+      },
+      "description": "LOADED once the model is in memory and ready to caption."
     },
     {
       "type": "stat",
-      "title": "Active requests",
+      "title": "Active requests: right now",
       "id": 6,
       "datasource": {
         "type": "prometheus",
@@ -372,11 +375,12 @@
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false
-      }
+      },
+      "description": "Uploads being processed at this moment. Stays at 1 while a ZIP runs."
     },
     {
       "type": "stat",
-      "title": "Active sessions (5 min)",
+      "title": "Active sessions: last 5 min",
       "id": 7,
       "datasource": {
         "type": "prometheus",
@@ -436,11 +440,12 @@
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false
-      }
+      },
+      "description": "Distinct browser tabs that used the app in the last 5 minutes."
     },
     {
       "type": "stat",
-      "title": "Failed images (5 min)",
+      "title": "Failed images: last 5 min",
       "id": 8,
       "datasource": {
         "type": "prometheus",
@@ -508,7 +513,8 @@
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false
-      }
+      },
+      "description": "Share of images that could not be captioned. Pink above 10%."
     },
     {
       "type": "row",
@@ -641,7 +647,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Bulk ZIPs show as sustained pink plateaus; single uploads as short yellow blips."
     },
     {
       "type": "timeseries",
@@ -797,7 +804,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Uploads received per minute, with any errors by type. Errors should stay near zero."
     },
     {
       "type": "table",
@@ -885,7 +893,8 @@
             "desc": true
           }
         ]
-      }
+      },
+      "description": "Who is using the app, from the client_ip and session_id labels. Totals since start."
     },
     {
       "type": "barchart",
@@ -979,7 +988,8 @@
             "includeTimeField": false
           }
         }
-      ]
+      ],
+      "description": "Total images per mode, split into success and failed."
     },
     {
       "type": "barchart",
@@ -1073,7 +1083,8 @@
             "includeTimeField": false
           }
         }
-      ]
+      ],
+      "description": "Files in ZIPs that were not captioned, e.g. not_image for .txt files."
     },
     {
       "type": "row",
@@ -1253,7 +1264,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Typical (p50) and worst-case (p95, p99) model time per image. Log scale."
     },
     {
       "type": "timeseries",
@@ -1373,7 +1385,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Average time per upload. Bulk is a whole ZIP, so it is much longer than single."
     },
     {
       "type": "heatmap",
@@ -1456,7 +1469,8 @@
         "exemplars": {
           "color": "#F4B301"
         }
-      }
+      },
+      "description": "How many images fell in each latency bucket per minute. Brighter means more images."
     },
     {
       "type": "timeseries",
@@ -1587,7 +1601,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Preprocessing is small; rising lock wait means users are competing for the CPU."
     },
     {
       "type": "row",
@@ -1779,7 +1794,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "During a bulk job all three rise together, so the CPU spike is caused by the app."
     },
     {
       "type": "timeseries",
@@ -1946,7 +1962,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "The app holds about 1.3 GiB (mostly the model); the rest is other programs."
     },
     {
       "type": "timeseries",
@@ -2121,7 +2138,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Load average climbs while the bulk queue drains, then falls back when it reaches 0."
     },
     {
       "type": "row",
@@ -2330,7 +2348,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Inference shows up as user time; iowait would mean the disk is the bottleneck."
     },
     {
       "type": "timeseries",
@@ -2462,7 +2481,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "High swap with RAM near full means the machine is under memory pressure."
     },
     {
       "type": "gauge",
@@ -2531,7 +2551,8 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true,
         "minVizHeight": 75
-      }
+      },
+      "description": "Share of the / filesystem in use. Turns pink above 90%."
     },
     {
       "type": "timeseries",
@@ -2710,7 +2731,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Spikes when the model loads from disk or Prometheus writes its data."
     },
     {
       "type": "timeseries",
@@ -2841,7 +2863,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Mostly idle; large receive bursts come from the first model download."
     },
     {
       "type": "row",
@@ -2974,7 +2997,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Average file size users upload. ZIPs are larger than single images."
     },
     {
       "type": "timeseries",
@@ -3113,7 +3137,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Average megapixels of inputs (left) and words per caption (right)."
     },
     {
       "type": "timeseries",
@@ -3233,11 +3258,12 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "Tokens the model generates per second; follows throughput closely."
     },
     {
       "type": "table",
-      "title": "Build & model info",
+      "title": "Build & model info: what is running",
       "id": 34,
       "datasource": {
         "type": "prometheus",
@@ -3375,7 +3401,8 @@
       "options": {
         "showHeader": true,
         "cellHeight": "sm"
-      }
+      },
+      "description": "Static details of the deployed app, model and PyTorch setup."
     }
   ]
 }
