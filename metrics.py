@@ -7,7 +7,7 @@ disable_created_metrics()
 # mode: single or bulk
 # status: success or failed
 # client_ip: IP address of the browser, "localhost" locally
-# session_id : first 8 chars of the Streamlit session id (one per browser tab)
+# session_id : first 8 chars of the Streamlit session id
 
 # Counters, monotonic increase only
 REQUESTS = Counter(
