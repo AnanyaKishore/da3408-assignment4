@@ -59,7 +59,7 @@ alertmanager-0.34.1.linux-amd64/
 | `metrics.py` | All Prometheus metrics, defined with `prometheus_client`: Counters, Gauges, Histograms, Summaries and an Info metric, with the custom labels `mode`, `status`, `client_ip` and `session_id`. They live in a separate module because Streamlit re-runs `app.py` on every interaction, which would otherwise register the metrics twice. The `/metrics` endpoint is served on a separate port (18000). |
 | `prometheus.yml` | Scrape configuration for the app (`localhost:18000`), node_exporter (`localhost:9100`) and Prometheus itself, every 5 secs. Also loads `rules.yml` and points to Alertmanager. |
 | `rules.yml` | Recording rules (pre-computed PromQL used by the dashboard: CPU %, RAM %, disk, network, latency percentiles, error ratio) and alert rules (app down, node_exporter down, high CPU, high RAM, slow inference, high error rate). Explanations are commented above each PromQL. |
-| `alertmanager.yml` | Routes firing alerts to a webhook (replace the URL with your own from https://webhook.site). |
+| `alertmanager.yml` | Routes firing alerts to a webhook (https://webhook.site/8e7a6c69-8aa6-4d98-9606-59496a25344d). |
 | `grafana/dashboard.json` | Grafana dashboard export, ordered from high-level health to low-level resources: service health, throughput, latency, app/host correlation, system resources, workload. |
 
 ---
