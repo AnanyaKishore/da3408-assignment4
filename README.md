@@ -127,4 +127,4 @@ docker stop grafana
 
 ---
 
-Author: Ananya Kishore (DA24B035)
+Ananya Kishore (DA24B035)
