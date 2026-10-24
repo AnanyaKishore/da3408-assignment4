@@ -3,12 +3,11 @@
 ## Structure
 ```text
 da3408-assignment4/
-├── grafana/
-│   └── dashboard.json
 ├── .gitignore
 ├── AI_DISCLOSURE.md
 ├── alertmanager.yml
 ├── app.py
+├── dashboard.json
 ├── metrics.py
 ├── prometheus.yml
 ├── README.md
@@ -60,7 +59,7 @@ alertmanager-0.34.1.linux-amd64/
 | `prometheus.yml` | Scrape configuration for the app (`localhost:18000`), node_exporter (`localhost:9100`) and Prometheus itself, every 5 secs. Also loads `rules.yml` and points to Alertmanager. |
 | `rules.yml` | Recording rules (pre-computed PromQL used by the dashboard: CPU %, RAM %, disk, network, latency percentiles, error ratio) and alert rules (app down, node_exporter down, high CPU, high RAM, slow inference, high error rate). Explanations are commented above each PromQL. |
 | `alertmanager.yml` | Routes firing alerts to a webhook (https://webhook.site/8e7a6c69-8aa6-4d98-9606-59496a25344d). |
-| `grafana/dashboard.json` | Grafana dashboard export, ordered from high-level health to low-level resources: service health, throughput, latency, app/host correlation, system resources, workload. |
+| `dashboard.json` | Grafana dashboard export, ordered from high-level health to low-level resources: service health, throughput, latency, app/host correlation, system resources, workload. |
 
 ---
 
@@ -113,7 +112,7 @@ docker start grafana
 ```
 1. Open http://localhost:3000.
 2. Go to **Connections -> Data sources -> Add data source -> Prometheus** and set the server URL to `http://172.17.0.1:9090`. Grafana runs inside Docker, where `localhost` refers to the container itself, so it must reach Prometheus through the Docker bridge address (or the machine's Wi-Fi IP). Click **Save & test**.
-3. Go to **Dashboards -> New -> Import**, upload `grafana/dashboard.json` and select the Prometheus data source.
+3. Go to **Dashboards -> New -> Import**, upload `dashboard.json` and select the Prometheus data source.
 4. Set the time range to a relative range (e.g. **Last 30 minutes**) and the refresh to **5s**.
 
 Upload a single image and a ZIP in the Streamlit app to see the throughput, latency and host resource panels respond.
